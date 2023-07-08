@@ -4,14 +4,14 @@ pub struct Ingredient {
 }
 
 impl Ingredient {
-    fn new(name: String, calories: f32) -> Ingredient {
+   pub fn new(name: String, calories: f32) -> Ingredient {
         Ingredient {
             name: name,
             calories_100g: calories,
         }
     }
 
-    fn calories_per100(&self) -> f32 {
-        self.calories_per100() / 100.0
+    pub fn calories_per1(&self) -> f32 {
+        self.calories_100g / 100.0
     }
 }

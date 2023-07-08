@@ -1,44 +1,46 @@
-use std::io;
-
-use munchy_cli::munchy::core::ingredient;
 use munchy_cli::munchy::core::ingredient::*;
 use munchy_cli::munchy::core::recipe::*;
 use munchy_cli::munchy::core::CookBook;
-use munchy_cli::munchy::core::{self, IngredientDb};
+use munchy_cli::munchy::core::IngredientDb;
+use std::io;
 
 fn main() {
-    let db: IngredientDb = IngredientDb::new("Basics".to_string());
+    let mut db: IngredientDb = IngredientDb::new("Basics".to_string());
+    create_ingredient(&mut db);
+    create_ingredient(&mut db);
+
     createRecipe(&db);
 }
 
-fn createRecipe(ingrDb: &IngredientDb) {
+fn createRecipe(ingrDb: &IngredientDb) -> Recipe {
     let mut name = String::new();
     println!("Enter recipe name: ");
     io::stdin()
         .read_line(&mut name)
         .expect("Failed to read line");
-
     let mut new_recipe: Recipe = Recipe::new(name);
 
     let mut ingredient_name = String::new();
     let mut ingredient_qty = String::new();
 
     loop {
-        print!("Ingredient name:");
+        println!("Ingredient name:");
         io::stdin()
             .read_line(&mut ingredient_name)
             .expect("Failed to read line");
 
-        print!("Quantity:");
+          println!("{ingredient_name}");
+        
+        if ingredient_name.trim() == "done" {
+            break;
+        }
+
+        println!("Quantity (grams):");
         io::stdin()
             .read_line(&mut ingredient_qty)
             .expect("Failed to read line");
 
-        if ingredient_name == "done" {
-            break;
-        }
-
-        let ingredient_qty: f32 = match ingredient_qty.trim().parse() {
+        let qty: f32 = match ingredient_qty.trim().parse() {
             Ok(num) => num,
             Err(_) => {
                 println!("Wrong ingredient quantity.");
@@ -46,18 +48,50 @@ fn createRecipe(ingrDb: &IngredientDb) {
             }
         };
 
-        match new_recipe.add_ingredient(ingredient_name.clone(), ingredient_qty, ingrDb) {
-            Ok(_) => print!(""),
-            Err(MissingIngErr) => print!("No such ingredient. Given ingredient not added."),
+        match new_recipe.add_ingredient(ingredient_name.clone(), qty, ingrDb) {
+            Ok(_) => {
+              println!("Added {ingredient_qty}g of {ingredient_name}");
+              ingredient_name.clear();              
+              ingredient_qty.clear();
+            },
+            Err(MissingIngErr) => println!("No such ingredient. Given ingredient not added."),
         }
+    }
+    println!("Recipe created!");
+    new_recipe      
+}
+
+fn add_recipe_to_cookbook(_recipe: Recipe, _cook_book: CookBook) {}
+
+fn create_ingredient(ing_db: &mut IngredientDb) {
+    println!("Ingredient name:");
+    let mut name = String::new();
+    io::stdin()
+        .read_line(&mut name)
+        .expect("Failed to read line");
+
+    println!("Enter calories per 100g:");
+
+    loop {
+        let mut calories = String::new();
+        io::stdin()
+            .read_line(&mut calories)
+            .expect("Failed to read line");
+        match calories.trim().parse() {
+            Ok(num) => {
+                let new_ingredient: Ingredient = Ingredient::new(name, num);
+                ing_db.addIngredient(new_ingredient);
+                break;
+            }
+            Err(_) => {
+                println!("Calorie must be a valid number.");
+                continue;
+            }
+        };
     }
 }
 
-fn add_recipe_to_cookbook(recipe: Recipe, cook_book: CookBook) {}
-
-fn createIngredient() {}
-
-fn add_ingredient_to_db(ingr: Ingredient, db: IngredientDb) {}
+fn add_ingredient_to_db(_ingr: Ingredient, _db: IngredientDb) {}
 
 //Step 1
 /*
