@@ -1,15 +1,48 @@
 use munchy_cli::munchy::core::ingredient::*;
+use munchy_cli::munchy::core::recipe;
 use munchy_cli::munchy::core::recipe::*;
 use munchy_cli::munchy::core::CookBook;
 use munchy_cli::munchy::core::IngredientDb;
+use munchy_cli::munchy::core::Printable;
 use std::io;
 
 fn main() {
     let mut db: IngredientDb = IngredientDb::new("Basics".to_string());
-    create_ingredient(&mut db);
-    create_ingredient(&mut db);
+    let mut cook_book: CookBook = CookBook::new("Basics".to_string());
 
-    createRecipe(&db);
+    loop {
+        let mut command = String::new();
+        println!("What would you like to do?");
+        io::stdin()
+            .read_line(&mut command)
+            .expect("Failed to read line");
+
+        match command.as_str().trim() {
+            "add_recipe" => {
+                let new_recipe = createRecipe(&db);
+                add_recipe_to_cookbook(new_recipe, &mut cook_book);
+            }
+
+            "add_ingredient" => create_ingredient(&mut db),
+
+            "print_recipes" => {
+                println!("{} something", cook_book.print());
+            }
+
+            "print_ingredients" => {
+                println!("{}", db.print());
+            }
+
+            "done" => {
+                println!("Thank you for using munchy cli!");
+                break;
+            }
+
+            _ => println!("No such command"),
+        }
+
+        command.clear();
+    }
 }
 
 fn createRecipe(ingrDb: &IngredientDb) -> Recipe {
@@ -29,8 +62,8 @@ fn createRecipe(ingrDb: &IngredientDb) -> Recipe {
             .read_line(&mut ingredient_name)
             .expect("Failed to read line");
 
-          println!("{ingredient_name}");
-        
+        println!("{ingredient_name}");
+
         if ingredient_name.trim() == "done" {
             break;
         }
@@ -50,18 +83,20 @@ fn createRecipe(ingrDb: &IngredientDb) -> Recipe {
 
         match new_recipe.add_ingredient(ingredient_name.clone(), qty, ingrDb) {
             Ok(_) => {
-              println!("Added {ingredient_qty}g of {ingredient_name}");
-              ingredient_name.clear();              
-              ingredient_qty.clear();
-            },
+                println!("Added {ingredient_qty}g of {ingredient_name}");
+                ingredient_name.clear();
+                ingredient_qty.clear();
+            }
             Err(MissingIngErr) => println!("No such ingredient. Given ingredient not added."),
         }
     }
     println!("Recipe created!");
-    new_recipe      
+    new_recipe
 }
 
-fn add_recipe_to_cookbook(_recipe: Recipe, _cook_book: CookBook) {}
+fn add_recipe_to_cookbook(recipe: Recipe, cook_book: &mut CookBook) {
+    cook_book.addRecipe(recipe);
+}
 
 fn create_ingredient(ing_db: &mut IngredientDb) {
     println!("Ingredient name:");
@@ -91,8 +126,6 @@ fn create_ingredient(ing_db: &mut IngredientDb) {
     }
 }
 
-fn add_ingredient_to_db(_ingr: Ingredient, _db: IngredientDb) {}
-
 //Step 1
 /*
 
@@ -109,7 +142,7 @@ fn add_ingredient_to_db(_ingr: Ingredient, _db: IngredientDb) {}
 */
 
 /*
- * Implement UI
+ * Implement UI - DONE
 */
 
 //Step 2
